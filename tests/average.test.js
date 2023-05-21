@@ -13,6 +13,6 @@ describe('average', () => {
     })
 
     test('of one value is the value itself', () => {
-        expect(average[1]).toBe(1)
+        expect(average([1])).toBe(1)
     })
 })

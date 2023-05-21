@@ -9,6 +9,8 @@ const average = (array) => {
   const reducer = (sum, item) => {
     return sum + item
   }
+  console.log(array)
+  console.log(array.length)
 
   return array.length === 0
     ? 0

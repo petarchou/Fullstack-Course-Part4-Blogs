@@ -15,7 +15,7 @@ describe('favoriteBlog', () => {
         expect(result).toEqual(undefined)
     })
 
-    test('returns blog for single blog', () => {
+    test('returns blog likes==for single blog', () => {
         const blogs = [testBlog]
 
         const result = favoriteBlog(blogs)
