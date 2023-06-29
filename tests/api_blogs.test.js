@@ -21,13 +21,27 @@ test('api/blogs returns all blogs as expected', async () => {
 
     expect(response.body.length).toEqual(helper.initialBlogs.length)
 })
-afterAll(async () => {
-    await mongoose.connection.close()
-})
 
 test('blogs should have id as unique parameter', async () => {
     const response = await api.get('/api/blogs');
-    console.log(response.body)
     expect(response.body[0].id).toBeDefined();
+})
+
+test('POST /api/blogs creates a new post', async () => {
+    const prePostBlogSize = (await api.get('/api/blogs')).body.length;
+
+    const response = await api.post('/api/blogs')
+    .send(helper.initialBlogs[0])
+    .set('Content-Type', 'application/json')
+    console.log(response)
+    const afterPostBlogSize = (await api.get('/api/blogs')).body.length;
+    
+    expect(response.statusCode).toEqual(201);
+    expect(afterPostBlogSize).toEqual(prePostBlogSize+1);
+})
+
+
+afterAll(async () => {
+    await mongoose.connection.close()
 })
 
