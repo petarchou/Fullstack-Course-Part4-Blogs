@@ -25,3 +25,9 @@ afterAll(async () => {
     await mongoose.connection.close()
 })
 
+test('blogs should have id as unique parameter', async () => {
+    const response = await api.get('/api/blogs');
+    console.log(response.body)
+    expect(response.body[0].id).toBeDefined();
+})
+
