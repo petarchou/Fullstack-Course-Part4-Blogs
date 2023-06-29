@@ -33,12 +33,22 @@ test('POST /api/blogs creates a new post', async () => {
     const response = await api.post('/api/blogs')
     .send(helper.initialBlogs[0])
     .set('Content-Type', 'application/json')
-    console.log(response)
     const afterPostBlogSize = (await api.get('/api/blogs')).body.length;
     
     expect(response.statusCode).toEqual(201);
     expect(afterPostBlogSize).toEqual(prePostBlogSize+1);
 })
+
+test('default likes value is 0 when creating blog', async () => {
+    const blog = helper.initialBlogs[0];
+    delete blog.likes
+
+    const response = await api.post('/api/blogs')
+    .send(blog)
+    .set('Content-Type', 'application/json')
+
+    expect(response.body.likes).toEqual(0)
+} )
 
 
 afterAll(async () => {
