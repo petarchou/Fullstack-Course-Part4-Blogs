@@ -39,6 +39,15 @@ test('POST /api/blogs creates a new post', async () => {
     expect(afterPostBlogSize).toEqual(prePostBlogSize+1);
 })
 
+test("POST api/blogs with missing title/url returns 400", async() => {
+    const invalidBlog = helper.initialBlogs[0];
+    delete invalidBlog.title
+    const response = await api.post('/api/blogs')
+        .send(invalidBlog)
+        .set('Content-Type', 'application/json')
+    expect(response.statusCode).toEqual(400);
+})
+
 test('default likes value is 0 when creating blog', async () => {
     const blog = helper.initialBlogs[0];
     delete blog.likes

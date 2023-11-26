@@ -3,7 +3,8 @@ const config = require('./utils/config')
 const express = require('express');
 const cors = require('cors');
 const logger = require('./utils/logger')
-const blogsRouter = require('./controllers/blog');
+const blogsController = require('./controllers/blog');
+const middleware = require('./utils/middleware')
 
 const app = express();
 
@@ -24,9 +25,11 @@ app.use(express.json());
 
 
 //API
-app.use('/api/blogs', blogsRouter);
+app.use('/api/blogs', blogsController)
 
 //add middleware when requested
+console.log("middleware: ", middleware.errorHandler)
+app.use(middleware.errorHandler)
 
 
 
