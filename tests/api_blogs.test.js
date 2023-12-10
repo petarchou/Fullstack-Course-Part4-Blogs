@@ -49,7 +49,7 @@ test("POST api/blogs with missing title/url returns 400", async() => {
 })
 
 test('default likes value is 0 when creating blog', async () => {
-    const blog = helper.initialBlogs[0];
+    const blog = {...helper.initialBlogs[0]};
     delete blog.likes
 
     const response = await api.post('/api/blogs')
