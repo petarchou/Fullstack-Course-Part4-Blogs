@@ -3,6 +3,8 @@ const app = require('../app.js')
 const Blog  = require('../models/blog.js')
 const helper = require('./test_helper.js')
 const supertest = require('supertest')
+const blog = require('../models/blog.js')
+const { stubString } = require('lodash')
 
 const api = supertest(app)
 
@@ -58,6 +60,61 @@ test('default likes value is 0 when creating blog', async () => {
 
     expect(response.body.likes).toEqual(0)
 } )
+
+test("DELETE api/blogs/:id with invalid id returns 400", async() => {
+    const response = await api.delete('/api/blogs/randomId')
+    .send()
+    .set('Content-Type', 'application/json')
+
+    expect(response.statusCode).toEqual(400)
+})
+
+test("DELETE api/blogs/:id valid id deletes and returns 204", async() => {
+    const blog = await Blog.findOne()
+    const blogsBefore = await Blog.count()
+    const response = await api.delete('/api/blogs/' + blog.id)
+    .send()
+    .set('Content-Type', 'application/json')
+
+    const blogsAfter = await Blog.count()
+    console.log('Blogs after: ', blogsAfter)
+
+    expect(blogsBefore).toEqual(blogsAfter+1)
+    expect(response.statusCode).toEqual(204)
+})
+
+test('PUT api/blogs/:id with invalid id returns 400', async() => {
+    const response = await api.put('/api/blogs/randomId')
+    .send()
+    .set('Content-Type', 'application/json')
+
+    expect(response.statusCode).toEqual(400)
+})
+
+test('PUT api/blogs/:id with non-existent id returns 404 and proper message', async () => {
+    const blog = await Blog.findOne()
+    const id = '0'.repeat(blog.id.length)
+    const response = await api.put('/api/blogs/' + id)
+
+    const expectedMessage = "No blog found with ID " + id;
+    expect(response.body.message).toEqual(expectedMessage)
+})
+
+test('PUT api/blogs/:id valid id updates, returns 200 and returns updated entity', async() => {
+    const blogId = (await Blog.findOne()).id
+    const body = {
+        likes: 1
+    }
+    const response = await api.put('/api/blogs/'+ blogId)
+    .send(body)
+    .set('Content-Type', 'application/json')
+
+    console.log('Body is: ', response.body)
+
+    expect(response.body.likes).toEqual(1)
+    expect(response.statusCode).toEqual(200)
+})
+
 
 
 afterAll(async () => {
