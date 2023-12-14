@@ -4,7 +4,6 @@ const Blog  = require('../models/blog.js')
 const helper = require('./test_helper.js')
 const supertest = require('supertest')
 const blog = require('../models/blog.js')
-const { stubString } = require('lodash')
 
 const api = supertest(app)
 
@@ -42,7 +41,7 @@ test('POST /api/blogs creates a new post', async () => {
 })
 
 test("POST api/blogs with missing title/url returns 400", async() => {
-    const invalidBlog = helper.initialBlogs[0];
+    const invalidBlog = {...helper.initialBlogs[0]};
     delete invalidBlog.title
     const response = await api.post('/api/blogs')
         .send(invalidBlog)

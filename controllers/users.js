@@ -12,12 +12,14 @@ usersRouter.post('/', async (request, response, next) => {
             response.status(400).json({
                 error: "Missing required fields: 'username' or 'password'"
             })
+            return
         }
 
         if(!(username.length >=3 && password.length >= 3)) {
             response.status(400).json({
                 error: "'username' and 'password' should be atleast 3 characters long"
             })
+            return
         }
 
         const saltRounds = 10;
