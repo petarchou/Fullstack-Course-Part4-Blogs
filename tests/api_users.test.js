@@ -30,4 +30,22 @@ describe('When creating users', () => {
         const usersAfter = await helper.usersInDb()
         expect(usersBefore).toEqual(usersAfter)
     })
+
+    test('Valid input creates user and returns 201', async () => {
+        const usersBefore = await helper.usersInDb()
+        const userInput = {
+            username: 'user001',
+            name: 'mr001',
+            password: '001'
+        }
+
+        const response = await api.post('/api/users')
+        .send(userInput)
+        .set('Content-Type', 'application/json')
+        
+        expect(response.statusCode).toEqual(201)
+
+        const usersAfter = await helper.usersInDb()
+        expect(usersBefore).toEqual(usersAfter-1)
+    })
 })
