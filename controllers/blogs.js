@@ -3,6 +3,7 @@
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
 const User = require('../models/user')
+const middleware = require('../utils/middleware')
 
 
 
@@ -11,18 +12,10 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-blogsRouter.post('/', async (request, response, next) => {
+blogsRouter.post('/', middleware.userExtractor, async (request, response, next) => {
 
   try {
-    const decodedToken = request.decodedToken
-
-    if (!decodedToken) {
-      return response
-        .status(401)
-        .json({ error: 'Invalid or missing token' })
-    }
-
-    const user = await User.findById(decodedToken.id)
+    const user = request.user
 
     const input = {
       ...request.body,
@@ -41,18 +34,10 @@ blogsRouter.post('/', async (request, response, next) => {
   }
 })
 
-blogsRouter.delete('/:id', async (request, response, next) => {
+blogsRouter.delete('/:id', middleware.userExtractor, async (request, response, next) => {
 
   try {
-    const decodedToken = request.decodedToken
-
-    if (!decodedToken) {
-      return response
-        .status(401)
-        .json({ error: 'Invalid or missing token' })
-    }
-
-    const user = await User.findById(decodedToken.id)
+    const user = request.user
 
     const id = request.params.id
     const blog = await Blog.findById(id)
@@ -61,14 +46,14 @@ blogsRouter.delete('/:id', async (request, response, next) => {
         .status(404)
         .json({ message: "No blog found with ID " + id })
     }
-
-    if (blog.user.toString() != user.id) {
+    
+    if (blog.user.toString() !== user.id) {
       return response
         .status(401)
         .json({ error: 'Only the blog creator can modify a blog' })
     }
 
-    const result = await Blog.deleteOne({_id: id})
+    const result = await Blog.deleteOne({ _id: id })
 
     if (result) {
       response.status(204).end()
