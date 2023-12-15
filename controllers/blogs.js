@@ -44,16 +44,34 @@ blogsRouter.post('/', async (request, response, next) => {
 blogsRouter.delete('/:id', async (request, response, next) => {
 
   try {
-    const id = request.params.id
+    const decodedToken = request.decodedToken
 
-    const result = await Blog.findByIdAndDelete(id)
+    if (!decodedToken) {
+      return response
+        .status(401)
+        .json({ error: 'Invalid or missing token' })
+    }
+
+    const user = await User.findById(decodedToken.id)
+
+    const id = request.params.id
+    const blog = await Blog.findById(id)
+    if (!blog) {
+      return response
+        .status(404)
+        .json({ message: "No blog found with ID " + id })
+    }
+
+    if (blog.user != user.id) {
+      return response
+        .status(401)
+        .json({ error: 'Only the blog creator can modify a blog' })
+    }
+
+    const result = await Blog.deleteOne({_id: id})
 
     if (result) {
       response.status(204).end()
-    } else {
-      response.status(404).json({
-        message: "No blog found with ID " + id
-      })
     }
 
   } catch (error) {
