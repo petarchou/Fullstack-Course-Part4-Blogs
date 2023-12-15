@@ -1,10 +1,12 @@
+const jwt = require('jsonwebtoken')
+
 const logger = require('./logger')
 
 const errorHandler = (error, request, response, next) => {
     logger.error(error.message)
 
-    if(error.name === 'ValidationError' || error.name === 'CastError') {
-        response.status(400).json({error: error.message})
+    if (error.name === 'ValidationError' || error.name === 'CastError') {
+        response.status(400).json({ error: error.message })
     } else if (error.name === 'JsonWebTokenError') {
         return response.status(401).json({ error: error.message })
     } else if (error.name === 'TokenExpiredError') {
@@ -15,6 +17,26 @@ const errorHandler = (error, request, response, next) => {
     next(error)
 }
 
+const tokenExtractor = (request, response, next) => {
+    const token = getTokenFromRequest(request)
+    if(token) {
+        const decodedToken = jwt.verify(token, process.env.SECRET)
+        request.decodedToken = decodedToken
+    }
+    next()
+}
+
+const getTokenFromRequest = request => {
+    const authorization = request.get('authorization')
+    if (authorization && authorization.startsWith('Bearer')) {
+      return authorization.replace('Bearer ', '')
+    }
+    return null
+  }
 
 
-module.exports = {errorHandler}
+
+module.exports = {
+    errorHandler,
+    tokenExtractor
+}

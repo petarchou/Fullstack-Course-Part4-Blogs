@@ -25,6 +25,9 @@ mongoose.connect(config.MONGODB_URI)
 app.use(cors());
 app.use(express.json());
 
+//Request Modification
+app.use(middleware.tokenExtractor)
+
 
 //API
 app.use('/api/blogs', blogsController)
