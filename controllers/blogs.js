@@ -62,7 +62,7 @@ blogsRouter.delete('/:id', async (request, response, next) => {
         .json({ message: "No blog found with ID " + id })
     }
 
-    if (blog.user != user.id) {
+    if (blog.user.toString() != user.id) {
       return response
         .status(401)
         .json({ error: 'Only the blog creator can modify a blog' })
