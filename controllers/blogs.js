@@ -54,7 +54,7 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response, n
     if (blog.user.toString() !== user.id) {
       return response
         .status(401)
-        .json({ error: 'Only the blog creator can modify a blog' })
+        .json({ error: 'Only the blog creator can delete a blog' })
     }
 
     const result = await Blog.deleteOne({ _id: id })
@@ -76,31 +76,26 @@ blogsRouter.put('/:id', middleware.userExtractor, async (request, response, next
 
     const foundBlog = await Blog.findById(id)
     const like = request.body.like
-    console.log(like)
+
+    console.log(foundBlog.likesList, ' - initial likesList')
 
     delete request.body.likesList
 
-    console.log(`FoundBlog likeslist: ${foundBlog.likesList}`)
     const hasAlreadyLiked = await Blog.exists({
-      _id: foundBlog._id, // Assuming you have the foundBlog object with _id
-      likesList: { $in: [user._id] }
+      _id: foundBlog._id,
+      likesList: { $in: [user.id] }
     })
 
-      console.log(hasAlreadyLiked)
+    console.log('has liked = ', hasAlreadyLiked)
 
     if (like == 1 && !hasAlreadyLiked) {
       request.body.likesList = foundBlog.likesList.concat(user._id)
     } else if (like == 0 && hasAlreadyLiked) {
-      console.log('im Here')
-      request.body.likesList = foundBlog.likesList.filter(userId => {
-        console.log(`blog user id: ${userId}`)
-        console.log(`disliking user id: ${user._id}`)
-        userId != user._id
-      })
+      request.body.likesList = foundBlog.likesList.filter(userId => userId != user.id)
     }
 
-    console.log(`LikesList is ${request.body.likesList}`)
-
+    console.log(`updated likesList - ${request.body.likesList}`)
+    console.log('im here')
     const result = await Blog.findByIdAndUpdate(id, request.body, {
       new: true,
       runValidators: true,
