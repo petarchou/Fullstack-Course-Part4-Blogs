@@ -34,8 +34,7 @@ app.use('/api/blogs', blogsController)
 app.use('/api/users', usersController)
 app.use('/api/login', loginController)
 
-//add middleware when requested
-console.log("middleware: ", middleware.errorHandler)
+//error handlers
 app.use(middleware.errorHandler)
 
 

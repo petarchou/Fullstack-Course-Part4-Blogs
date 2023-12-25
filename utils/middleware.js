@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 const jwt = require('jsonwebtoken')
 
 const logger = require('./logger')
@@ -54,5 +55,5 @@ const userExtractor = async (request, response, next) => {
 module.exports = {
     errorHandler,
     tokenExtractor,
-    userExtractor
+    userExtractor,
 }

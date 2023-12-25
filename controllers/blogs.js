@@ -9,6 +9,7 @@ const middleware = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1, id: 1 })
+    .populate('likesList', { username: 1, name: 1, id: 1 })
   response.json(blogs)
 })
 
@@ -19,13 +20,14 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response, next) 
 
     const input = {
       ...request.body,
-      user: user.id
+      user: user.id,
     }
 
     const blog = new Blog(input)
     await blog.save()
 
     const savedBlog = await Blog.findById(blog._id).populate('user', { username: 1, name: 1, id: 1 })
+      .populate('likesList', { username: 1, name: 1, id: 1 })
 
     user.blogs = user.blogs.concat(savedBlog.id)
     await user.save()
@@ -46,9 +48,9 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response, n
     if (!blog) {
       return response
         .status(404)
-        .json({ message: "No blog found with ID " + id })
+        .json({ message: 'No blog found with ID ' + id })
     }
-    
+
     if (blog.user.toString() !== user.id) {
       return response
         .status(401)
@@ -66,16 +68,45 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response, n
   }
 })
 
-blogsRouter.put('/:id', async (request, response, next) => {
+blogsRouter.put('/:id', middleware.userExtractor, async (request, response, next) => {
 
   try {
-    const id = request.params.id;
+    const id = request.params.id
+    const user = request.user
+
+    const foundBlog = await Blog.findById(id)
+    const like = request.body.like
+    console.log(like)
+
+    delete request.body.likesList
+
+    console.log(`FoundBlog likeslist: ${foundBlog.likesList}`)
+    const hasAlreadyLiked = await Blog.exists({
+      _id: foundBlog._id, // Assuming you have the foundBlog object with _id
+      likesList: { $in: [user._id] }
+    })
+
+      console.log(hasAlreadyLiked)
+
+    if (like == 1 && !hasAlreadyLiked) {
+      request.body.likesList = foundBlog.likesList.concat(user._id)
+    } else if (like == 0 && hasAlreadyLiked) {
+      console.log('im Here')
+      request.body.likesList = foundBlog.likesList.filter(userId => {
+        console.log(`blog user id: ${userId}`)
+        console.log(`disliking user id: ${user._id}`)
+        userId != user._id
+      })
+    }
+
+    console.log(`LikesList is ${request.body.likesList}`)
 
     const result = await Blog.findByIdAndUpdate(id, request.body, {
       new: true,
       runValidators: true,
       context: 'query'
-    })
+    }).populate('user', { username: 1, name: 1, id: 1 })
+      .populate('likesList', { username: 1, name: 1 })
 
     if (result) {
       response.status(200).json(result)
